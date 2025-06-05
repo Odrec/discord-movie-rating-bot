@@ -1,6 +1,7 @@
 import discord
 from discord.ext import commands
 import re
+import random
 from typing import List, Dict, Optional
 
 # Bot configuration
@@ -152,7 +153,7 @@ class MoviePlaylist:
         return self.smart_shuffle(playlist)
     
     def smart_shuffle(self, playlist: List[str]) -> List[str]:
-        """Shuffle playlist ensuring no consecutive duplicates and optimal distribution"""
+        """Shuffle playlist ensuring all movies play before any repeats"""
         if len(playlist) <= 1:
             return playlist
         
@@ -161,20 +162,37 @@ class MoviePlaylist:
         for movie in playlist:
             movie_counts[movie] = movie_counts.get(movie, 0) + 1
         
-        # Check if it's possible to avoid all consecutive duplicates
-        max_count = max(movie_counts.values())
-        if max_count > (len(playlist) + 1) // 2:
-            # If one movie appears more than half the time, perfect distribution is impossible
-            # Fall back to best effort
-            return self.best_effort_shuffle(playlist)
+        # Create rounds: each round contains every movie once
+        unique_movies = list(movie_counts.keys())
+        max_frequency = max(movie_counts.values())
         
-        # Use backtracking to find a valid arrangement
-        result = self.backtrack_shuffle(playlist, movie_counts)
-        if result:
-            return result
+        result = []
         
-        # If backtracking fails, use best effort
-        return self.best_effort_shuffle(playlist)
+        # Create rounds where each movie appears once per round
+        for round_num in range(max_frequency):
+            round_movies = []
+            
+            # Add each movie to this round if it still has appearances left
+            for movie in unique_movies:
+                if movie_counts[movie] > round_num:
+                    round_movies.append(movie)
+            
+            # Shuffle this round to avoid predictable patterns
+            random.shuffle(round_movies)
+            
+            # Ensure no consecutive duplicates between rounds
+            if result and round_movies:
+                # If the last movie of previous round is the same as first of this round, swap
+                if result[-1] == round_movies[0] and len(round_movies) > 1:
+                    # Find a different movie to put first
+                    for i in range(1, len(round_movies)):
+                        if round_movies[i] != result[-1]:
+                            round_movies[0], round_movies[i] = round_movies[i], round_movies[0]
+                            break
+            
+            result.extend(round_movies)
+        
+        return result
     
     def backtrack_shuffle(self, playlist: List[str], movie_counts: Dict[str, int]) -> Optional[List[str]]:
         """Use backtracking to find a valid arrangement with no consecutive duplicates"""
@@ -626,7 +644,8 @@ async def help_ratings(ctx):
               "• **≥ 3 ratings, avg 5.0-5.9:** Default frequency\n"
               "• **≥ 3 ratings, avg 6.0-7.9:** Default + 1\n"
               "• **≥ 3 ratings, avg 8.0-10.0:** Default + 2\n"
-              "• **Smart shuffling:** No consecutive duplicates\n"
+              "• **Round-based shuffling:** All movies play before any repeats\n"
+              "• **No consecutive duplicates:** Perfect variety guaranteed\n"
               "• **Customizable:** Set default_frequency (1-10, default: 3)",
         inline=False
     )

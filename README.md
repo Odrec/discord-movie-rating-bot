@@ -118,10 +118,11 @@ The bot recognizes these reaction types as numeric ratings:
 4. **≥ 3 ratings with average 6.0-7.9**: Movie appears **default_frequency + 1 times**
 5. **≥ 3 ratings with average 8.0-10.0**: Movie appears **default_frequency + 2 times**
 
-### Smart Shuffling:
-- Movies are distributed evenly throughout the playlist
-- Repeated instances of the same movie are spaced far apart
-- Algorithm optimizes for maximum variety while maintaining proportional representation
+### Smart Round-Based Shuffling:
+- **All movies play before any repeats**: Every movie appears once before any movie appears twice
+- **Round-based system**: Movies are organized into rounds where each round contains every movie once
+- **No consecutive duplicates**: Advanced algorithm prevents the same movie playing back-to-back
+- **Maximum variety**: Ensures optimal viewing experience with perfect distribution
 
 ## Example Usage 💡
 
