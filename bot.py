@@ -108,35 +108,28 @@ class MoviePlaylist:
     def calculate_playlist_frequency(self, movie_data: Dict[str, Dict], default_frequency: int = 3) -> Dict[str, int]:
         """Calculate how many times each movie should appear in playlist"""
         playlist_frequencies = {}
-        rated_movies = []
         
         for title, data in movie_data.items():
             count = data['count']
             average = data['average']
             
             if count < 3:
-                # Less than 3 ratings: appears default_frequency times regardless of rating
+                # Less than 3 ratings: appears default_frequency times
                 playlist_frequencies[title] = default_frequency
             else:
-                # 3 or more ratings: consider average
+                # 3 or more ratings: consider average with new tier system
                 if average < 5.0:
                     # Below 5: remove from playlist
                     playlist_frequencies[title] = 0
-                else:
-                    # 5 or above: frequency based on rating
-                    rated_movies.append((title, average))
-        
-        # Calculate proportional frequencies for rated movies
-        if rated_movies:
-            # Normalize ratings to determine relative frequencies
-            total_rating_weight = sum(rating for _, rating in rated_movies)
-            base_frequency = default_frequency  # Use configurable minimum frequency for rated movies
-            
-            for title, rating in rated_movies:
-                # Proportional frequency: base + extra based on rating
-                proportion = rating / total_rating_weight if total_rating_weight > 0 else 0
-                extra_frequency = int(proportion * len(rated_movies) * 2)  # Scale factor
-                playlist_frequencies[title] = max(base_frequency, base_frequency + extra_frequency)
+                elif 5.0 <= average < 6.0:
+                    # 5.0-5.9: default frequency
+                    playlist_frequencies[title] = default_frequency
+                elif 6.0 <= average < 8.0:
+                    # 6.0-7.9: default + 1
+                    playlist_frequencies[title] = default_frequency + 1
+                else:  # average >= 8.0
+                    # 8.0-10.0: default + 2
+                    playlist_frequencies[title] = default_frequency + 2
         
         return playlist_frequencies
     
@@ -628,10 +621,12 @@ async def help_ratings(ctx):
     
     embed.add_field(
         name="🎭 Playlist Rules",
-        value="• **No ratings or < 3 ratings:** Movie appears default_frequency times\n"
-              "• **≥ 3 ratings, avg < 5.0:** Movie excluded\n"
-              "• **≥ 3 ratings, avg ≥ 5.0:** Frequency based on rating\n"
-              "• **Smart shuffling:** No consecutive duplicates, optimal distribution\n"
+        value="• **No ratings or < 3 ratings:** Default frequency\n"
+              "• **≥ 3 ratings, avg < 5.0:** Excluded from playlist\n"
+              "• **≥ 3 ratings, avg 5.0-5.9:** Default frequency\n"
+              "• **≥ 3 ratings, avg 6.0-7.9:** Default + 1\n"
+              "• **≥ 3 ratings, avg 8.0-10.0:** Default + 2\n"
+              "• **Smart shuffling:** No consecutive duplicates\n"
               "• **Customizable:** Set default_frequency (1-10, default: 3)",
         inline=False
     )

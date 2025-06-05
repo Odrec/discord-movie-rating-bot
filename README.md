@@ -112,9 +112,11 @@ The bot recognizes these reaction types as numeric ratings:
 ## How Movie Playlists Work 🔧
 
 ### Rating Rules:
-1. **No ratings or < 3 ratings**: Movie appears **default_frequency times** in playlist (customizable, default: 3)
+1. **No ratings or < 3 ratings**: Movie appears **default_frequency times** (customizable, default: 3)
 2. **≥ 3 ratings with average < 5.0**: Movie is **excluded** from playlist
-3. **≥ 3 ratings with average ≥ 5.0**: Movie frequency is **proportional to rating**
+3. **≥ 3 ratings with average 5.0-5.9**: Movie appears **default_frequency times**
+4. **≥ 3 ratings with average 6.0-7.9**: Movie appears **default_frequency + 1 times**
+5. **≥ 3 ratings with average 8.0-10.0**: Movie appears **default_frequency + 2 times**
 
 ### Smart Shuffling:
 - Movies are distributed evenly throughout the playlist
@@ -132,9 +134,11 @@ User posts: "Avatar"
 
 ### 2. Rate Movies
 ```
-The Matrix: 8️⃣ 9️⃣ 🔟 8️⃣ 7️⃣ (avg: 8.4, 5 ratings)
-Inception: 9️⃣ 🔟 9️⃣ (avg: 9.3, 3 ratings)
-Avatar: 4️⃣ 3️⃣ 5️⃣ 4️⃣ (avg: 4.0, 4 ratings - excluded!)
+The Matrix: 8️⃣ 9️⃣ 🔟 8️⃣ 7️⃣ (avg: 8.4, 5 ratings → default + 2)
+Inception: 9️⃣ 🔟 9️⃣ (avg: 9.3, 3 ratings → default + 2)
+Good Movie: 7️⃣ 6️⃣ 7️⃣ 6️⃣ (avg: 6.5, 4 ratings → default + 1)
+Average Movie: 5️⃣ 5️⃣ 6️⃣ (avg: 5.3, 3 ratings → default)
+Avatar: 4️⃣ 3️⃣ 5️⃣ 4️⃣ (avg: 4.0, 4 ratings → excluded!)
 ```
 
 ### 3. Generate Playlist
@@ -149,8 +153,10 @@ Avatar: 4️⃣ 3️⃣ 5️⃣ 4️⃣ (avg: 4.0, 4 ratings - excluded!)
 Playlist Length: 12 (with 3x default) or 18 (with 5x default)
 Default Frequency: 3x (or 5x if customized)
 
-- The Matrix appears 4x/6x times (high rating, many votes)
-- Inception appears 5x/7x times (highest rating)
+- The Matrix appears 5x/7x times (8.0-10.0 tier: default + 2)
+- Inception appears 5x/7x times (8.0-10.0 tier: default + 2)
+- Good Movie appears 4x/6x times (6.0-7.9 tier: default + 1)
+- Average Movie appears 3x/5x times (5.0-5.9 tier: default)
 - Avatar excluded (below 5.0 average)
 Smart shuffled with no consecutive duplicates
 ```
