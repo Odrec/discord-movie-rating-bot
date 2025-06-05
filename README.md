@@ -18,7 +18,7 @@ A Discord bot that analyzes numeric reactions (0-10) on movie messages and creat
 ### 1. Clone and Setup
 
 ```bash
-git clone <your-repo-url>
+git clone https://github.com/Odrec/discord-movie-rating-bot.git
 cd discord-ratings-bot
 python setup.py
 ```
